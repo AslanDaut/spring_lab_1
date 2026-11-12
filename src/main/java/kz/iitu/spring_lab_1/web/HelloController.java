@@ -30,6 +30,11 @@ public class HelloController {
         return new SumResult(a + b, a - b, a * b);
     }
 
+    @GetMapping("/")
+    public String home() {
+        return "Authenticated! Go to /books or /admin";
+    }
+
     public record Greeting(String message, String owner, LocalDateTime timestamp) { }
 
     public record Info(String owner, String javaVersion, int cpuCores) { }
