@@ -1,10 +1,11 @@
 package kz.iitu.spring_lab_1.service;
 
+import java.math.BigDecimal;
 import kz.iitu.spring_lab_1.domain.Account;
 import kz.iitu.spring_lab_1.domain.AccountRepository;
+import kz.iitu.spring_lab_1.exception.AccountNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.math.BigDecimal;
 
 @Service
 public class AccountService {
@@ -16,10 +17,19 @@ public class AccountService {
         this.auditService = auditService;
     }
 
+    @Transactional(readOnly = true)
+    public Account byId(Long id) {
+        return repository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
+    }
+
     @Transactional
     public void transfer(Long fromId, Long toId, BigDecimal amount, boolean simulateError) {
-        Account from = repository.findById(fromId).orElseThrow();
-        Account to = repository.findById(toId).orElseThrow();
+        Account from = byId(fromId);
+        Account to = byId(toId);
+
+        if ("BLOCKED".equals(from.getStatus())) {
+            throw new IllegalStateException("Blocked source account cannot make transfers");
+        }
 
         from.debit(amount);
         to.credit(amount);
@@ -31,8 +41,7 @@ public class AccountService {
         auditService.logAuditRecord("Transfer initiated from " + fromId + " to " + toId);
 
         if (simulateError) {
-            // Unchecked исключение приведет к откату (rollback) перевода,
-            // но аудит останется сохраненным.
+            // Unchecked исключение приведет к откату перевода, аудит при этом сохранится.
             throw new RuntimeException("Simulated error to trigger rollback!");
         }
     }

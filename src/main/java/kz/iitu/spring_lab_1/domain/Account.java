@@ -1,6 +1,12 @@
 package kz.iitu.spring_lab_1.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 
 @Entity
@@ -22,14 +28,23 @@ public class Account {
     @Column(nullable = false)
     private String status = "ACTIVE";
 
-    public Account() {}
+    protected Account() { }
+
+    public Account(String ownerName, BigDecimal balance, String status) {
+        this.ownerName = ownerName;
+        this.balance = balance;
+        this.status = status;
+    }
 
     public Long getId() { return id; }
     public String getOwnerName() { return ownerName; }
     public BigDecimal getBalance() { return balance; }
     public Long getVersion() { return version; }
+    public String getStatus() { return status; }
 
+    public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
     public void setBalance(BigDecimal balance) { this.balance = balance; }
+    public void setStatus(String status) { this.status = status; }
 
     public void debit(BigDecimal amount) {
         if (amount.signum() <= 0) throw new IllegalArgumentException("Amount must be positive");
